@@ -51,8 +51,12 @@ head(dt_simulated_weekly)
 data("dt_prophet_holidays")
 head(dt_prophet_holidays)
 
+# Check if Australia is listed as a country in dt_prophet_holidays
+is_australia_listed <- "AU" %in% dt_prophet_holidays$country
+is_australia_listed
+
 # Directory where you want to export results to (will create new folders)
-robyn_directory <- "~/Desktop"
+robyn_directory <- "/Users/jiaozihuanmeishu/Projects/Robyn-study/demo_results"
 
 ################################################################
 #### Step 2a: For first time user: Model specification in 4 steps
@@ -62,24 +66,27 @@ robyn_directory <- "~/Desktop"
 ## All sign control are now automatically provided: "positive" for media & organic
 ## variables and "default" for all others. User can still customise signs if necessary.
 ## Documentation is available, access it anytime by running: ?robyn_inputs
+# InputCollect <- robyn_inputs(
+#   dt_input = dt_simulated_weekly,
+#   dt_holidays = dt_prophet_holidays,
+#   date_var = "DATE", # date format must be "2020-01-01"
+#   dep_var = "revenue", # there should be only one dependent variable
+#   dep_var_type = "revenue", # "revenue" (ROI) or "conversion" (CPA)
+#   prophet_vars = c("trend", "season", "holiday"), # "trend","season", "weekday" & "holiday"
+#   prophet_country = "DE", # input country code. Check: dt_prophet_holidays
+#   context_vars = c("competitor_sales_B", "events"), # e.g. competitors, discount, unemployment etc
+#   paid_media_spends = c("tv_S", "ooh_S", "print_S", "facebook_S", "search_S"), # mandatory input
+#   paid_media_vars = c("tv_S", "ooh_S", "print_S", "facebook_I", "search_clicks_P"), # mandatory.
+#   # paid_media_vars must have same order as paid_media_spends. Use media exposure metrics like
+#   # impressions, GRP etc. If not applicable, use spend instead.
+#   organic_vars = "newsletter", # marketing activity without media spend
+#   # factor_vars = c("events"), # force variables in context_vars or organic_vars to be categorical
+#   window_start = "2016-01-01",
+#   window_end = "2018-12-31",
+#   adstock = "geometric" # geometric, weibull_cdf or weibull_pdf.
+# )
 InputCollect <- robyn_inputs(
-  dt_input = dt_simulated_weekly,
-  dt_holidays = dt_prophet_holidays,
-  date_var = "DATE", # date format must be "2020-01-01"
-  dep_var = "revenue", # there should be only one dependent variable
-  dep_var_type = "revenue", # "revenue" (ROI) or "conversion" (CPA)
-  prophet_vars = c("trend", "season", "holiday"), # "trend","season", "weekday" & "holiday"
-  prophet_country = "DE", # input country code. Check: dt_prophet_holidays
-  context_vars = c("competitor_sales_B", "events"), # e.g. competitors, discount, unemployment etc
-  paid_media_spends = c("tv_S", "ooh_S", "print_S", "facebook_S", "search_S"), # mandatory input
-  paid_media_vars = c("tv_S", "ooh_S", "print_S", "facebook_I", "search_clicks_P"), # mandatory.
-  # paid_media_vars must have same order as paid_media_spends. Use media exposure metrics like
-  # impressions, GRP etc. If not applicable, use spend instead.
-  organic_vars = "newsletter", # marketing activity without media spend
-  # factor_vars = c("events"), # force variables in context_vars or organic_vars to be categorical
-  window_start = "2016-01-01",
-  window_end = "2018-12-31",
-  adstock = "geometric" # geometric, weibull_cdf or weibull_pdf.
+  json_file = "./Robyn_202405221141_init/RobynModel-1_98_11.json"
 )
 print(InputCollect)
 
@@ -100,8 +107,8 @@ hyper_names(adstock = InputCollect$adstock, all_media = InputCollect$all_media)
 
 ## 1. IMPORTANT: set plot = TRUE to create example plots for adstock & saturation
 ## hyperparameters and their influence in curve transformation.
-plot_adstock(plot = FALSE)
-plot_saturation(plot = FALSE)
+plot_adstock(plot = TRUE)
+plot_saturation(plot = TRUE)
 
 ## 2. Get correct hyperparameter names:
 # All variables in paid_media_spends and organic_vars require hyperparameter and will be
@@ -303,6 +310,10 @@ OutputModels <- robyn_run(
   ts_validation = TRUE, # 3-way-split time series for NRMSE validation.
   add_penalty_factor = FALSE # Experimental feature. Use with caution.
 )
+OutputModels <- robyn_run(
+  json_file = "./Robyn_202405221141_init/RobynModel-1_98_11.json"
+)
+
 print(OutputModels)
 
 ## Check MOO (multi-objective optimization) convergence plots
@@ -341,7 +352,7 @@ print(OutputCollect)
 
 ## Compare all model one-pagers and select one that mostly reflects your business reality
 print(OutputCollect)
-select_model <- "1_122_7" # Pick one of the models from OutputCollect to proceed
+select_model <- "1_98_11" # Pick one of the models from OutputCollect to proceed
 
 #### Version >=3.7.1: JSON export and import (faster and lighter than RDS files)
 ExportedModel <- robyn_write(InputCollect, OutputCollect, select_model, export = create_files)
@@ -351,8 +362,8 @@ print(ExportedModel)
 myOnePager <- robyn_onepagers(InputCollect, OutputCollect, select_model, export = FALSE)
 
 # To check each of the one-pager's plots
-# myOnePager[[select_model]]$patches$plots[[1]]
-# myOnePager[[select_model]]$patches$plots[[2]]
+myOnePager[[select_model]]$patches$plots[[1]]
+myOnePager[[select_model]]$patches$plots[[2]]
 # myOnePager[[select_model]]$patches$plots[[3]] # ...
 
 ################################################################

@@ -1,0 +1,8 @@
+install.packages(c("arrow", "dplyr", "ggplot2", "jsonlite", "plumber", "tibble"))
+install.packages("remotes")
+remotes::install_github("facebookexperimental/Robyn/R")
+ls
+!ls
+getwd()
+setwd("/Users/jiaozihuanmeishu/Projects/Robyn-study")
+getwd()
